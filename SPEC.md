@@ -52,3 +52,4 @@ T7|~|验证容器健康、API 与 WebSocket 反代|V1,V3,V9,V10,I1,I5,I7
 ## §B
 
 id|date|cause|fix
+B1|2026-07-25|Docker Desktop 到 auth.docker.io:443 的代理或直连链路不可达|外部网络/代理配置；无代码不变量
