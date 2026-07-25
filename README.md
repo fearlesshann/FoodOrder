@@ -54,7 +54,8 @@ npm run build
 ```powershell
 cd E:\yehan\FoodOrder
 Copy-Item .env.example .env
-docker compose up -d --build
+docker compose build --no-cache web api
+docker compose up -d --force-recreate
 ```
 
 浏览器访问 `http://localhost`。停止服务：
@@ -62,6 +63,8 @@ docker compose up -d --build
 ```powershell
 docker compose down
 ```
+
+更新发布时也使用上面的 `build --no-cache` 和 `up --force-recreate`，确保服务器不会继续运行旧前端镜像。发布后可用无痕窗口打开，或强制刷新一次页面。
 
 菜单数据保存在 Docker 命名卷 `foodorder_dinner_data` 中，执行 `docker compose down` 或重新构建镜像不会删除数据。
 
