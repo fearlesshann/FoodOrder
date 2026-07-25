@@ -21,6 +21,7 @@ const noteDrafts = ref<Record<number, string>>({})
 const editingNoteId = ref<number | null>(null)
 const noteEditor = ref<HTMLTextAreaElement | null>(null)
 let scrollIntentUntil = 0
+let revealTimer: number | null = null
 const today = new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' }).format(new Date())
 
 function noteValue(selection: Selection) { return noteDrafts.value[selection.id] ?? selection.note }
@@ -38,6 +39,8 @@ async function editNote(selection: Selection) {
   noteEditor.value.focus({ preventScroll: true })
   const end = noteEditor.value.value.length
   noteEditor.value.setSelectionRange(end, end)
+  if (revealTimer !== null) window.clearTimeout(revealTimer)
+  revealTimer = window.setTimeout(revealNoteEditor, 360)
 }
 function save(selection: Selection) {
   const value = cleanNote(noteValue(selection))
@@ -57,16 +60,22 @@ function closeActiveNoteOnScroll() {
   scrollIntentUntil = 0
   closeActiveNote()
 }
+function revealNoteEditor() {
+  noteEditor.value?.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' })
+}
 
 onMounted(() => {
   window.addEventListener('touchmove', markScrollIntent, { passive: true })
   window.addEventListener('wheel', markScrollIntent, { passive: true })
   window.addEventListener('scroll', closeActiveNoteOnScroll, { passive: true })
+  window.visualViewport?.addEventListener('resize', revealNoteEditor)
 })
 onBeforeUnmount(() => {
   window.removeEventListener('touchmove', markScrollIntent)
   window.removeEventListener('wheel', markScrollIntent)
   window.removeEventListener('scroll', closeActiveNoteOnScroll)
+  window.visualViewport?.removeEventListener('resize', revealNoteEditor)
+  if (revealTimer !== null) window.clearTimeout(revealTimer)
 })
 </script>
 

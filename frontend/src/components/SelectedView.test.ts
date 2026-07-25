@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import SelectedView from './SelectedView.vue'
 import type { Selection } from '../types'
 
@@ -28,10 +28,16 @@ describe('SelectedView V21 note editor', () => {
   })
 
   it('focuses on open, ignores keyboard scroll, then closes on a real swipe', async () => {
+    const viewport = new EventTarget()
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value: viewport })
     const wrapper = mountView()
     await wrapper.findAll('.note-trigger')[0].trigger('click')
     await nextTick()
     expect(document.activeElement).toBe(wrapper.get('textarea').element)
+    const keepVisible = vi.fn()
+    Object.defineProperty(wrapper.get('textarea').element, 'scrollIntoView', { value: keepVisible })
+    viewport.dispatchEvent(new Event('resize'))
+    expect(keepVisible).toHaveBeenCalledWith({ behavior: 'auto', block: 'center', inline: 'nearest' })
     await wrapper.get('textarea').setValue('少辣')
     window.dispatchEvent(new Event('scroll'))
     await nextTick()
@@ -42,5 +48,6 @@ describe('SelectedView V21 note editor', () => {
     expect(wrapper.find('textarea').exists()).toBe(false)
     expect(wrapper.emitted('save-note')?.[0]).toEqual([selections[0], '少辣'])
     wrapper.unmount()
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value: undefined })
   })
 })
