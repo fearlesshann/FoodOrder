@@ -17,3 +17,8 @@ def test_v23_pip_downloads_survive_slow_or_interrupted_network() -> None:
     assert "--default-timeout=120" in dockerfile
     assert "--retries 10" in dockerfile
     assert "--no-cache-dir" not in dockerfile
+
+
+def test_v24_uploaded_images_bypass_frontend_static_regex() -> None:
+    nginx = Path("../frontend/nginx.conf").read_text(encoding="utf-8")
+    assert "location ^~ /uploads/" in nginx
