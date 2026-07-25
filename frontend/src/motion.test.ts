@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 
 const app = readFileSync('src/App.vue', 'utf8')
 const selectedView = readFileSync('src/components/SelectedView.vue', 'utf8')
+const menuView = readFileSync('src/components/MenuView.vue', 'utf8')
 const styles = readFileSync('src/styles.css', 'utf8')
 
 describe('V30 primary dock timing', () => {
@@ -13,8 +14,10 @@ describe('V30 primary dock timing', () => {
     expect(selectedView).not.toContain('<Transition name="dock">')
   })
 
-  it('V31 keeps incoming fixed docks outside page-root entrance effects', () => {
-    expect(styles).not.toMatch(/\.page-enter-active\s*\{/)
-    expect(styles).not.toMatch(/\.page-enter-from\s*\{/)
+  it('V31/V32 keeps fixed docks outside page-root effects while preserving page entrance motion', () => {
+    expect(selectedView).toMatch(/<Teleport to="body">\s*<button[^>]*class="open-menu-dock"/s)
+    expect(menuView).toMatch(/<Teleport to="body">\s*<button[^>]*class="return-dock"/s)
+    expect(styles).toMatch(/\.page-enter-active\s*\{/)
+    expect(styles).toMatch(/\.page-enter-from\s*\{/)
   })
 })

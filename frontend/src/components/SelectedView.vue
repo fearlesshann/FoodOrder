@@ -133,6 +133,8 @@ onBeforeUnmount(() => {
       </section>
     </Transition>
 
-    <button v-if="selections.length" class="open-menu-dock" type="button" @click="emit('open-menu')"><span>＋</span> 加菜</button>
+    <Teleport to="body">
+      <button v-if="selections.length" class="open-menu-dock" type="button" @click="emit('open-menu')"><span>＋</span> 加菜</button>
+    </Teleport>
   </main>
 </template>

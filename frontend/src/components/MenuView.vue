@@ -85,9 +85,11 @@ onBeforeUnmount(() => confirmationTimers.forEach(timer => clearTimeout(timer)))
       </TransitionGroup>
     </Transition>
 
-    <button class="return-dock" type="button" @click="emit('back')">
-      <span>已选 <strong>{{ selections.length }}</strong> 道</span>
-      <span>选好了</span>
-    </button>
+    <Teleport to="body">
+      <button class="return-dock" type="button" @click="emit('back')">
+        <span>已选 <strong>{{ selections.length }}</strong> 道</span>
+        <span>选好了</span>
+      </button>
+    </Teleport>
   </main>
 </template>
