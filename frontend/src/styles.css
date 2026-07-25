@@ -36,9 +36,7 @@ button:not(:disabled):active { transform: scale(.96); }
 button:disabled { cursor: not-allowed; opacity: .56; }
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-.page-enter-active { transition: transform 360ms var(--ease), filter 320ms var(--ease); }
 .page-leave-active { position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; transition: opacity 260ms var(--ease), transform 300ms var(--ease), filter 260ms var(--ease); }
-.page-enter-from { transform: translateY(14px) scale(.992); filter: blur(5px); }
 .page-leave-to { opacity: 0; transform: translateY(-8px) scale(.996); filter: blur(3px); }
 .content-swap-enter-active { transition: opacity 320ms var(--ease), transform 360ms var(--ease); }
 .content-swap-leave-active { transition: opacity 220ms ease, transform 240ms var(--ease); }
