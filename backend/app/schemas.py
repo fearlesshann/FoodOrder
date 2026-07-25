@@ -1,59 +1,64 @@
 from __future__ import annotations
 
-import re
 from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
-FAMILY_CODE_PATTERN = re.compile(r"^[A-Za-z0-9_-]{6,48}$")
+class CategoryRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    sort_order: int
+    created_at: datetime
+    updated_at: datetime
 
 
-def validate_family_code(value: str) -> str:
-    if not FAMILY_CODE_PATTERN.fullmatch(value):
-        raise ValueError("家庭码需为 6–48 位字母、数字、下划线或连字符")
-    return value
-
-
-class DishCreate(BaseModel):
-    name: str = Field(min_length=1, max_length=40)
-    ordered_by: str = Field(min_length=1, max_length=24)
-    dinner_date: date | None = None
-
-    @field_validator("name", "ordered_by")
-    @classmethod
-    def clean_text(cls, value: str) -> str:
-        cleaned = value.strip()
-        if not cleaned:
-            raise ValueError("内容不能为空")
-        return cleaned
-
-
-class DishUpdate(BaseModel):
-    name: str = Field(min_length=1, max_length=40)
+class CategoryWrite(BaseModel):
+    name: str = Field(min_length=1, max_length=20)
 
     @field_validator("name")
     @classmethod
     def clean_name(cls, value: str) -> str:
         cleaned = value.strip()
         if not cleaned:
-            raise ValueError("菜名不能为空")
+            raise ValueError("分类名不能为空")
         return cleaned
 
 
-class DishRead(BaseModel):
+class CatalogDishRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     name: str
-    ordered_by: str
-    dinner_date: date
+    image_url: str
+    sort_order: int
+    category: CategoryRead
     created_at: datetime
     updated_at: datetime
 
 
-class MenuRead(BaseModel):
-    family_code: str
-    dinner_date: date
-    dishes: list[DishRead]
+class SelectionNoteUpdate(BaseModel):
+    note: str = Field(default="", max_length=120)
 
+    @field_validator("note")
+    @classmethod
+    def clean_note(cls, value: str) -> str:
+        return value.strip()
+
+
+class SelectionRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    dinner_date: date
+    note: str
+    created_at: datetime
+    updated_at: datetime
+    dish: CatalogDishRead
+
+
+class MenuRead(BaseModel):
+    dinner_date: date
+    selections: list[SelectionRead]

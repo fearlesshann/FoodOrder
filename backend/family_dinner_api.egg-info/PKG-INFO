@@ -6,6 +6,8 @@ Requires-Python: >=3.11
 Requires-Dist: fastapi<1,>=0.115
 Requires-Dist: sqlalchemy<3,>=2.0
 Requires-Dist: uvicorn[standard]<1,>=0.34
+Requires-Dist: pillow<13,>=11
+Requires-Dist: python-multipart<1,>=0.0.20
 Provides-Extra: dev
 Requires-Dist: httpx<1,>=0.28; extra == "dev"
 Requires-Dist: pytest<9,>=8.3; extra == "dev"

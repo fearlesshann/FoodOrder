@@ -6,6 +6,7 @@ services:
     environment:
       DATABASE_URL: sqlite:////data/dinner.db
       ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:-http://localhost}
+      UPLOAD_DIR: /data/uploads
     volumes:
       - dinner_data:/data
     expose:
@@ -29,4 +30,3 @@ services:
 
 volumes:
   dinner_data:
-

@@ -25,7 +25,7 @@ Committed dark strategy，全部使用 OKLCH。
 
 ## Components
 
-- Ticket header：日期、家庭码入口、实时状态。
+- Ticket header：日期、应用入口、实时状态。
 - Dish line：顺序号、菜名、点菜人、编辑和删除动作。
 - Composer：页面底部主要输入，提交后保留操作焦点。
 - Toast/status：短暂反馈，不遮挡核心操作。
@@ -33,4 +33,3 @@ Committed dark strategy，全部使用 OKLCH。
 ## Motion
 
 新增使用短距离上移与淡入，删除先划线再收起，实时远端更新使用一次红色脉冲。使用 expo/quint ease-out，不使用弹跳；减少动态效果时仅保留瞬时状态变化。
-

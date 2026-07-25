@@ -10,33 +10,56 @@
 - 前端 Vue 3 + TypeScript + Vite，手机优先。
 - 后端 Python + FastAPI + SQLite。
 - 不做账号、投票、采购、支付、菜品分类。
-- 首次输入昵称；家庭通过共享家庭码进入。
+- 所有访客默认可点菜；管理入口通过连续点击左上角标记 5 次发现，不构成安全鉴权。
+- 菜品图片由维护页上传；后端校验并保存到持久化目录。
+- 默认首页为当日已点菜品；图片菜单是次级选择页。
+- 分类可在后厨维护；默认 `荤菜`、`素菜`、`汤品`。
+- 首次只输入昵称；所有设备共享唯一一份家庭菜单。
+- 用户固定为两个角色：`我是做饭的`、`我是点菜的`；设备首次选择后记住。
 - 墨黑舞台、红色焦点、数字点菜单视觉。
 - WCAG AA；键盘可用；支持减少动态效果。
 
 ## §I
 
-- I1 `GET /api/menus/{family_code}/today`：读取今日菜单。
-- I2 `POST /api/menus/{family_code}/dishes`：新增菜品。
-- I3 `PATCH /api/menus/{family_code}/dishes/{dish_id}`：修改菜名。
-- I4 `DELETE /api/menus/{family_code}/dishes/{dish_id}`：删除菜品。
-- I5 `WS /api/menus/{family_code}/live`：广播菜单变更。
+- I1 `GET /api/menu/today`：读取今日菜单。
+- I2 `POST /api/menu/dishes`：新增菜品。
+- I3 `PATCH /api/menu/dishes/{dish_id}`：修改菜名。
+- I4 `DELETE /api/menu/dishes/{dish_id}`：删除菜品。
+- I5 `WS /api/menu/live`：广播菜单变更。
 - I6 `VITE_API_BASE_URL`：前端 API 地址。
 - I7 `docker compose up -d --build`：一键启动 Web 与 API。
 - I8 `PUBLIC_ORIGIN`：部署站点公开来源，用于 CORS 白名单。
+- I9 `GET /api/catalog`：读取可点菜目录。
+- I10 `POST /api/admin/dishes`、`PATCH/DELETE /api/admin/dishes/{id}`：上传图片并维护菜品。
+- I11 `POST /api/menu/selections/{dish_id}`：选择菜品。
+- I12 `PATCH /api/menu/selections/{selection_id}`：保存单菜备注。
+- I13 `DELETE /api/menu/selections/{selection_id}`：取消选择。
+- I14 `GET /uploads/{file}`：读取持久化菜品图片。
+- I15 `GET/POST /api/admin/categories`、`PATCH/DELETE /api/admin/categories/{id}`：维护分类。
 
 ## §V
 
-- V1 相同家庭码、相同日期的所有设备看到同一菜单。
+- V1 所有设备在相同日期看到唯一一份共享菜单。
 - V2 菜名去除首尾空白后必须为 1–40 个字符。
 - V3 新增、修改、删除成功后所有在线设备收到同步事件。
 - V4 页面加载失败、保存失败、断线时给出可恢复提示，不丢失输入。
 - V5 核心增删改可用触屏与键盘完成；减少动态效果时禁用位移类动画。
 - V6 手机 360px 宽度无横向溢出；桌面端保持单一视觉焦点。
 - V7 SQLite 文件与运行时配置不提交仓库。
-- V8 后端限制跨域来源，并对家庭码与请求体做校验。
+- V8 后端限制跨域来源，并对请求体做校验。
 - V9 容器部署仅公开 Web 端口；SQLite 数据通过命名卷持久化。
 - V10 同域反代必须支持普通 HTTP API 与 WebSocket 升级。
+- V11 首次进入只需一次点击选择角色；后续直达菜单且可从页头切换。
+- V12 首页仅从菜品目录选择；每道菜当日最多选择一次。
+- V13 每条当日选择独立保存 0–120 字备注，并实时同步所有设备。
+- V14 菜品必须有 1–40 字名称和有效图片；上传限制为 JPEG/PNG/WebP 且不超过 8MB。
+- V15 连续点击左上角标记 5 次进入维护页；普通界面不出现管理链接。
+- V16 删除菜品前若存在当日选择则拒绝；成功删除同时移除其托管图片。
+- V17 每道菜必须归属一个分类；被菜品使用的分类不可删除。
+- V18 默认首页以两列卡片显示已点菜品；备注与取消操作不离开首页。
+- V19 菜单页支持按分类和菜名搜索；选择立即保存，返回首页无需提交。
+- V20 分类名 1–20 字且唯一；新库默认 `荤菜`、`素菜`、`汤品`。
+- V21 已点页同一时刻最多展开一个备注输入框；切换卡片或滚动页面时保存并收起当前输入框。
 
 ## §T
 
@@ -48,8 +71,22 @@ T4|x|实现响应式单页点菜单与交互状态|V2,V4,V5,V6,I1,I2,I3,I4,I6
 T5|x|联调、自动化测试与生产构建|V1,V2,V3,V4,V5,V6,V7,V8
 T6|x|实现 Docker Compose 一键部署与持久化|V7,V8,V9,V10,I5,I6,I7,I8
 T7|~|验证容器健康、API 与 WebSocket 反代|V1,V3,V9,V10,I1,I5,I7
+T8|x|移除家庭分组并简化为唯一菜单空间|V1,V3,V4,I1,I2,I3,I4,I5
+T9|x|实现双角色设备认领与快捷切换|V4,V5,V11,I2
+T10|x|实现菜品目录、图片上传与维护 CRUD|V14,V16,I9,I10,I14
+T11|x|实现目录点菜、单菜备注与实时同步|V1,V3,V12,V13,I5,I11,I12,I13
+T12|x|实现沉浸式菜单首页与 5 连击秘密入口|V5,V6,V12,V13,V15,I9,I11,I12,I13
+T13|x|实现高密度后厨维护工作台|V5,V14,V16,I9,I10
+T14|x|迁移默认菜品素材并完成全量验证|V3,V4,V5,V6,V12,V13,V14,V15,V16
+T15|x|实现分类模型、迁移与维护 API|V17,V20,I9,I10,I15
+T16|x|实现两列已点主页与备注操作|V5,V6,V13,V18,I12,I13
+T17|x|实现分类搜索菜单页与返回流程|V5,V6,V12,V15,V19,I9,I11
+T18|x|扩展后厨分类维护与菜品归类|V14,V17,V20,I10,I15
+T19|~|完成两页流程全量验证与视觉验收|V3,V4,V5,V6,V12,V13,V14,V15,V16,V17,V18,V19,V20
 
 ## §B
 
 id|date|cause|fix
 B1|2026-07-25|Docker Desktop 到 auth.docker.io:443 的代理或直连链路不可达|外部网络/代理配置；无代码不变量
+B2|2026-07-25|Windows 下 Uvicorn `--reload` 父进程重启后遗留旧子进程，同一 8000 端口持续返回旧 OpenAPI|彻底结束旧终端/进程后无热重载启动，并以 OpenAPI/真实 HTTP 冒烟验证；运行态问题，无新增代码不变量
+B3|2026-07-25|每张菜品卡片独立保存备注展开状态，允许多个编辑框并存且页面滚动不收起|V21
