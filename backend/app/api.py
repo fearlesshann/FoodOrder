@@ -6,7 +6,8 @@ from datetime import date
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Path as ApiPath, Request, UploadFile, WebSocket, WebSocketDisconnect, status
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, ImageOps, UnidentifiedImageError
+from pillow_heif import register_heif_opener
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -17,8 +18,10 @@ from .schemas import CatalogDishRead, CategoryRead, CategoryWrite, MenuRead, Sel
 
 router = APIRouter(prefix="/api", tags=["dinner"])
 MENU_SPACE = "home-menu"
-MAX_IMAGE_BYTES = 8 * 1024 * 1024
-ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
+MAX_IMAGE_BYTES = 20 * 1024 * 1024
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"}
+ALLOWED_IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"}
+register_heif_opener()
 
 
 def get_session(request: Request):
@@ -33,15 +36,16 @@ def clean_name(name: str) -> str:
 
 
 async def save_image(upload: UploadFile, upload_dir: Path) -> tuple[str, str]:
-    if upload.content_type not in ALLOWED_IMAGE_TYPES:
-        raise HTTPException(status_code=422, detail="图片仅支持 JPEG、PNG 或 WebP")
+    suffix = Path(upload.filename or "").suffix.lower()
+    if upload.content_type not in ALLOWED_IMAGE_TYPES and suffix not in ALLOWED_IMAGE_SUFFIXES:
+        raise HTTPException(status_code=422, detail="图片仅支持 JPEG、PNG、WebP、HEIC 或 HEIF")
     content = await upload.read(MAX_IMAGE_BYTES + 1)
     if len(content) > MAX_IMAGE_BYTES:
-        raise HTTPException(status_code=413, detail="图片不能超过 8MB")
+        raise HTTPException(status_code=413, detail="图片不能超过 20MB")
     try:
         image = Image.open(io.BytesIO(content))
         image.verify()
-        image = Image.open(io.BytesIO(content)).convert("RGB")
+        image = ImageOps.exif_transpose(Image.open(io.BytesIO(content))).convert("RGB")
     except (UnidentifiedImageError, OSError) as exc:
         raise HTTPException(status_code=422, detail="图片文件无效") from exc
 

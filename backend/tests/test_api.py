@@ -5,6 +5,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 from PIL import Image
+from pillow_heif import from_pillow
 
 from app.config import Settings
 from app.main import create_app
@@ -24,6 +25,13 @@ def image_file(color: tuple[int, int, int] = (150, 20, 30)) -> tuple[str, io.Byt
     Image.new("RGB", (640, 420), color).save(buffer, "PNG")
     buffer.seek(0)
     return ("dish.png", buffer, "image/png")
+
+
+def phone_photo_file() -> tuple[str, io.BytesIO, str]:
+    buffer = io.BytesIO()
+    from_pillow(Image.new("RGB", (900, 1200), (20, 90, 140))).save(buffer)
+    buffer.seek(0)
+    return ("phone.heic", buffer, "image/heic")
 
 
 def test_catalog_starts_with_default_dishes(tmp_path: Path) -> None:
@@ -80,6 +88,21 @@ def test_admin_dish_crud_and_image_validation(tmp_path: Path) -> None:
         files={"image": ("bad.txt", io.BytesIO(b"not-an-image"), "text/plain")},
     )
     assert invalid.status_code == 422
+
+
+def test_v28_accepts_and_converts_phone_heic_photo(tmp_path: Path) -> None:
+    client = make_client(tmp_path)
+    category = client.get("/api/admin/categories").json()[0]
+    created = client.post(
+        "/api/admin/dishes",
+        data={"name": "手机拍摄菜品", "category_id": category["id"]},
+        files={"image": phone_photo_file()},
+    )
+    assert created.status_code == 201
+    output = next((tmp_path / "uploads").glob("*.webp"))
+    with Image.open(output) as image:
+        assert image.format == "WEBP"
+        assert max(image.size) <= 1920
 
 
 def test_select_note_unselect_and_prevent_catalog_delete(tmp_path: Path) -> None:

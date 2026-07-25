@@ -124,7 +124,7 @@ async function removeCategory(category: Category) {
       <form @submit.prevent="add">
         <label>菜名<input v-model="newName" maxlength="40" placeholder="输入菜名" /></label>
         <label>分类<select v-model="newCategoryId"><option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option></select></label>
-        <label>菜品图片<input ref="fileInput" type="file" accept="image/jpeg,image/png,image/webp" @change="newImage = ($event.target as HTMLInputElement).files?.[0] ?? null" /></label>
+        <label>菜品图片<input ref="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" @change="newImage = ($event.target as HTMLInputElement).files?.[0] ?? null" /></label>
         <button type="submit" :disabled="!newName.trim() || !newImage || newCategoryId === null || busy">{{ busy ? '处理中…' : '添加菜品' }}</button>
       </form>
     </section>
@@ -133,7 +133,7 @@ async function removeCategory(category: Category) {
     <p v-if="message" class="workbench-alert success" role="status">{{ message }}</p>
 
     <section class="dish-inventory" aria-labelledby="inventory-title">
-      <div class="inventory-heading"><h2 id="inventory-title">现有菜品</h2><span>图片支持 JPG / PNG / WebP，最大 8MB</span></div>
+      <div class="inventory-heading"><h2 id="inventory-title">现有菜品</h2><span>支持 JPG / PNG / WebP / HEIC / HEIF，最大 20MB</span></div>
       <div class="inventory-list">
         <article v-for="(dish, index) in catalog" :key="dish.id" class="inventory-row">
           <span class="inventory-index">{{ String(index + 1).padStart(2, '0') }}</span>
@@ -141,7 +141,7 @@ async function removeCategory(category: Category) {
           <div v-if="editingId === dish.id" class="edit-fields">
             <label>菜名<input v-model="editingName" maxlength="40" /></label>
             <label>分类<select v-model="editingCategoryId"><option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option></select></label>
-            <label>更换图片（可选）<input type="file" accept="image/jpeg,image/png,image/webp" @change="editingImage = ($event.target as HTMLInputElement).files?.[0] ?? null" /></label>
+            <label>更换图片（可选）<input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" @change="editingImage = ($event.target as HTMLInputElement).files?.[0] ?? null" /></label>
           </div>
           <div v-else class="inventory-name"><strong>{{ dish.name }}</strong><span>{{ dish.category.name }} · ID {{ dish.id }}</span></div>
           <div class="row-actions">
