@@ -103,7 +103,7 @@ async function submitDish() {
   const name = draft.value.trim()
   if (!name || saving.value) return
   if ([...name].length > 40) {
-    error.value = '菜名最多 40 个字符'
+    error.value = '菜名最多 40 个字'
     return
   }
   saving.value = true
