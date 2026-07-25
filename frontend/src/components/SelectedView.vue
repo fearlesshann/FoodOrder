@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { mediaUrl } from '../api'
 import { cleanNote } from '../menu'
 import type { Selection } from '../types'
@@ -19,15 +19,25 @@ const emit = defineEmits<{
 }>()
 const noteDrafts = ref<Record<number, string>>({})
 const editingNoteId = ref<number | null>(null)
+const noteEditor = ref<HTMLTextAreaElement | null>(null)
+let scrollIntentUntil = 0
 const today = new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' }).format(new Date())
 
 function noteValue(selection: Selection) { return noteDrafts.value[selection.id] ?? selection.note }
 function isEditingNote(selectionId: number) { return editingNoteId.value === selectionId }
-function editNote(selection: Selection) {
+function captureNoteEditor(element: unknown) {
+  noteEditor.value = element instanceof HTMLTextAreaElement ? element : null
+}
+async function editNote(selection: Selection) {
   if (editingNoteId.value === selection.id) return
   closeActiveNote()
   noteDrafts.value[selection.id] = noteValue(selection)
   editingNoteId.value = selection.id
+  await nextTick()
+  if (editingNoteId.value !== selection.id || !noteEditor.value) return
+  noteEditor.value.focus({ preventScroll: true })
+  const end = noteEditor.value.value.length
+  noteEditor.value.setSelectionRange(end, end)
 }
 function save(selection: Selection) {
   const value = cleanNote(noteValue(selection))
@@ -41,15 +51,31 @@ function closeActiveNote() {
   if (selection) save(selection)
   else editingNoteId.value = null
 }
+function markScrollIntent() { scrollIntentUntil = Date.now() + 800 }
+function closeActiveNoteOnScroll() {
+  if (Date.now() > scrollIntentUntil) return
+  scrollIntentUntil = 0
+  closeActiveNote()
+}
 
-onMounted(() => window.addEventListener('scroll', closeActiveNote, { passive: true }))
-onBeforeUnmount(() => window.removeEventListener('scroll', closeActiveNote))
+onMounted(() => {
+  window.addEventListener('touchmove', markScrollIntent, { passive: true })
+  window.addEventListener('wheel', markScrollIntent, { passive: true })
+  window.addEventListener('scroll', closeActiveNoteOnScroll, { passive: true })
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('touchmove', markScrollIntent)
+  window.removeEventListener('wheel', markScrollIntent)
+  window.removeEventListener('scroll', closeActiveNoteOnScroll)
+})
 </script>
 
 <template>
   <main class="selected-page">
     <header class="selected-header">
-      <button class="brand-mark" type="button" aria-label="小袁的专属食堂" @click="emit('secret-tap')">晚</button>
+      <button class="brand-mark" type="button" aria-label="小袁的专属食堂" @click="emit('secret-tap')">
+        <img src="/favicon.svg" alt="" width="36" height="36" aria-hidden="true" />
+      </button>
       <div><p>{{ today }}</p><h1>小袁的专属食堂</h1></div>
       <div class="live-status" :data-state="connection" role="status"><span></span>{{ connection === 'online' ? '实时同步' : connection === 'connecting' ? '正在连接' : '离线重试中' }}</div>
     </header>
@@ -75,12 +101,12 @@ onBeforeUnmount(() => window.removeEventListener('scroll', closeActiveNote))
             <div v-if="isEditingNote(selection.id)" class="note-editor">
               <label :for="`selected-note-${selection.id}`">特殊要求</label>
               <textarea
+              :ref="captureNoteEditor"
               :id="`selected-note-${selection.id}`"
               :value="noteValue(selection)"
               maxlength="120"
               rows="2"
               placeholder="少辣、不要香菜…"
-              autofocus
               @input="noteDrafts[selection.id] = ($event.target as HTMLTextAreaElement).value"
               @blur="save(selection)"
               ></textarea>

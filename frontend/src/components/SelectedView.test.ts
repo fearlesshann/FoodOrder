@@ -11,6 +11,7 @@ const selections = [
 
 function mountView() {
   return mount(SelectedView, {
+    attachTo: document.body,
     props: { selections, loading: false, error: '', connection: 'online' },
   })
 }
@@ -23,15 +24,23 @@ describe('SelectedView V21 note editor', () => {
     expect(wrapper.findAll('textarea')).toHaveLength(1)
     await wrapper.findAll('.note-trigger')[0].trigger('click')
     expect(wrapper.findAll('textarea')).toHaveLength(1)
+    wrapper.unmount()
   })
 
-  it('saves and closes the active editor when the page scrolls', async () => {
+  it('focuses on open, ignores keyboard scroll, then closes on a real swipe', async () => {
     const wrapper = mountView()
     await wrapper.findAll('.note-trigger')[0].trigger('click')
+    await nextTick()
+    expect(document.activeElement).toBe(wrapper.get('textarea').element)
     await wrapper.get('textarea').setValue('少辣')
+    window.dispatchEvent(new Event('scroll'))
+    await nextTick()
+    expect(wrapper.find('textarea').exists()).toBe(true)
+    window.dispatchEvent(new Event('touchmove'))
     window.dispatchEvent(new Event('scroll'))
     await nextTick()
     expect(wrapper.find('textarea').exists()).toBe(false)
     expect(wrapper.emitted('save-note')?.[0]).toEqual([selections[0], '少辣'])
+    wrapper.unmount()
   })
 })

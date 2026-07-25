@@ -22,3 +22,11 @@ def test_v23_pip_downloads_survive_slow_or_interrupted_network() -> None:
 def test_v24_uploaded_images_bypass_frontend_static_regex() -> None:
     nginx = Path("../frontend/nginx.conf").read_text(encoding="utf-8")
     assert "location ^~ /uploads/" in nginx
+
+
+def test_v25_production_site_has_favicon_and_legacy_fallback() -> None:
+    index = Path("../frontend/index.html").read_text(encoding="utf-8")
+    nginx = Path("../frontend/nginx.conf").read_text(encoding="utf-8")
+    assert 'rel="icon" href="/favicon.svg"' in index
+    assert Path("../frontend/public/favicon.svg").is_file()
+    assert "location = /favicon.ico" in nginx
