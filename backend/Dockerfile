@@ -6,8 +6,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 COPY pyproject.toml ./
-RUN mkdir -p app && touch app/__init__.py \
-    && pip install --no-cache-dir .
+RUN --mount=type=cache,target=/root/.cache/pip \
+    mkdir -p app && touch app/__init__.py \
+    && pip install --default-timeout=120 --retries 10 .
 
 COPY app ./app
 

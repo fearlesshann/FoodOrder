@@ -9,3 +9,11 @@ def test_v22_dependency_layer_precedes_application_source() -> None:
 def test_v22_ssh_deployment_allows_slow_first_build() -> None:
     workflow = Path("../.github/workflows/deploy.yml").read_text(encoding="utf-8")
     assert "command_timeout: 30m" in workflow
+
+
+def test_v23_pip_downloads_survive_slow_or_interrupted_network() -> None:
+    dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
+    assert "--mount=type=cache,target=/root/.cache/pip" in dockerfile
+    assert "--default-timeout=120" in dockerfile
+    assert "--retries 10" in dockerfile
+    assert "--no-cache-dir" not in dockerfile
