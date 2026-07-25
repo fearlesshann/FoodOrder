@@ -108,7 +108,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <Transition name="page" mode="out-in">
+  <Transition name="page">
     <AdminView v-if="adminMode" key="admin" :catalog="catalog" :categories="categories" @back="leaveAdmin" @refresh="loadData" />
     <MenuView
       v-else-if="surface === 'catalog'"
