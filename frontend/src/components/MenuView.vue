@@ -36,7 +36,7 @@ function toggleDish(dish: CatalogDish) {
       next.delete(dish.id)
       confirmingDishIds.value = next
       confirmationTimers.delete(dish.id)
-    }, 650))
+    }, 850))
   }
   emit('toggle', dish, selection)
 }
