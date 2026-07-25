@@ -8,16 +8,18 @@ Midnight kitchen ticket：家人在白天或通勤途中打开手机，像在低
 
 Committed dark strategy，全部使用 OKLCH。
 
-- Background: `oklch(0.075 0 0)`
-- Surface: `oklch(0.12 0 0)`
+- Background: `oklch(0.105 0.018 350)`
+- Surface: `oklch(0.155 0.024 350)`
 - Ink: `oklch(0.96 0 0)`
 - Muted: `oklch(0.70 0 0)`
 - Primary: `oklch(0.58 0.20 355)`
 - Accent: `oklch(0.86 0.15 110)`
 
+全局画布使用低光漆面餐桌摄影纹理：左侧暖琥珀光、右侧暗色餐巾，中间保持低对比留白；叠加深色遮罩后贯穿首页、菜单和后厨。页面容器保持透明，实体卡片继续使用 Surface 承载内容。
+
 ## Typography
 
-中文使用系统黑体栈。标题采用紧凑粗体，正文采用正常字重；菜单编号使用等宽数字。大标题最大 88px，字距不低于 `-0.04em`。
+中文统一使用随应用打包的 Zen Maru Gothic 圆体，并以幼圆和系统黑体作为回退。标题采用饱满、舒展的圆润字形，正文保持清晰紧凑；菜单编号继续使用等宽数字。角色感来自圆角笔画，不使用夸张泡泡字或描边。
 
 ## Layout
 

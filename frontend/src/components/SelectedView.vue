@@ -83,9 +83,9 @@ onBeforeUnmount(() => {
   <main class="selected-page">
     <header class="selected-header">
       <button class="brand-mark" type="button" aria-label="小袁的专属食堂" @click="emit('secret-tap')">
-        <img src="/favicon.svg" alt="" width="36" height="36" aria-hidden="true" />
+        <img src="/avatars/xiaoyuan-eater.png" alt="" width="72" height="72" aria-hidden="true" />
       </button>
-      <div><p>{{ today }}</p><h1>小袁的专属食堂</h1></div>
+      <div><h1>小袁的专属食堂</h1><p>{{ today }}</p></div>
       <div class="live-status" :data-state="connection" role="status"><span></span>{{ connection === 'online' ? '实时同步' : connection === 'connecting' ? '正在连接' : '离线重试中' }}</div>
     </header>
 

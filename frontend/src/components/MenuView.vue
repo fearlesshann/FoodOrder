@@ -28,6 +28,7 @@ function selected(dishId: number) { return selectionForDish(props.selections, di
 <template>
   <main class="menu-page catalog-page">
     <header class="catalog-header">
+      <img class="persona-avatar" src="/avatars/ye-chef.png" alt="" width="72" height="72" aria-hidden="true" />
       <div><h1>叶主厨的私房菜单</h1><p>点一下图片，立即加入今晚菜单</p></div>
       <span>{{ selections.length }} 道已选</span>
     </header>
@@ -58,7 +59,7 @@ function selected(dishId: number) { return selectionForDish(props.selections, di
               transform: selected(dish.id) ? 'rotate(-10deg) scale(1)' : 'rotate(-10deg) scale(1.35)',
             }"
             aria-hidden="true"
-          >已选</span>
+          ><svg class="image-stamp-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="9.5" width="4.5" height="12" rx="1.5" /><path d="M7 19.5h10.1a2.2 2.2 0 0 0 2.14-1.67l1.35-5.4A2.35 2.35 0 0 0 18.3 9.5h-4.2l.58-2.9a2.55 2.55 0 0 0-2.5-3.1L7 10.2" /></svg><span class="image-stamp-label">已选</span></span>
         </button>
       </li>
     </ol>
