@@ -108,29 +108,33 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <AdminView v-if="adminMode" :catalog="catalog" :categories="categories" @back="leaveAdmin" @refresh="loadData" />
-  <MenuView
-    v-else-if="surface === 'catalog'"
-    :catalog="catalog"
-    :categories="categories"
-    :selections="selections"
-    :loading="loading"
-    :error="error"
-    :connection="connection"
-    @toggle="toggleDish"
-    @back="surface = 'selected'"
-    @retry="loadData"
-  />
-  <SelectedView
-    v-else
-    :selections="selections"
-    :loading="loading"
-    :error="error"
-    :connection="connection"
-    @secret-tap="secretTap"
-    @open-menu="surface = 'catalog'"
-    @remove="toggleDish($event.dish, $event)"
-    @save-note="updateNote"
-    @retry="loadData"
-  />
+  <Transition name="page" mode="out-in">
+    <AdminView v-if="adminMode" key="admin" :catalog="catalog" :categories="categories" @back="leaveAdmin" @refresh="loadData" />
+    <MenuView
+      v-else-if="surface === 'catalog'"
+      key="catalog"
+      :catalog="catalog"
+      :categories="categories"
+      :selections="selections"
+      :loading="loading"
+      :error="error"
+      :connection="connection"
+      @toggle="toggleDish"
+      @back="surface = 'selected'"
+      @retry="loadData"
+    />
+    <SelectedView
+      v-else
+      key="selected"
+      :selections="selections"
+      :loading="loading"
+      :error="error"
+      :connection="connection"
+      @secret-tap="secretTap"
+      @open-menu="surface = 'catalog'"
+      @remove="toggleDish($event.dish, $event)"
+      @save-note="updateNote"
+      @retry="loadData"
+    />
+  </Transition>
 </template>

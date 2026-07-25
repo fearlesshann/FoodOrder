@@ -89,16 +89,17 @@ onBeforeUnmount(() => {
       <div class="live-status" :data-state="connection" role="status"><span></span>{{ connection === 'online' ? '实时同步' : connection === 'connecting' ? '正在连接' : '离线重试中' }}</div>
     </header>
 
-    <div v-if="error" class="page-error selected-error" role="alert"><span>{{ error }}</span><button type="button" @click="emit('retry')">重试</button></div>
-    <div v-if="loading" class="selected-loading" role="status">正在摆好今晚菜单…</div>
-    <section v-else-if="!selections.length" class="selected-empty">
-      <span aria-hidden="true">00</span><h2>今晚还没点菜</h2><p>去菜单看看，想吃什么就点什么。</p>
-      <button type="button" @click="emit('open-menu')">去菜单点菜 →</button>
-    </section>
+    <Transition name="feedback"><div v-if="error" class="page-error selected-error" role="alert"><span>{{ error }}</span><button type="button" @click="emit('retry')">重试</button></div></Transition>
+    <Transition name="content-swap" mode="out-in">
+      <div v-if="loading" key="loading" class="selected-loading" role="status">正在摆好今晚菜单…</div>
+      <section v-else-if="!selections.length" key="empty" class="selected-empty">
+        <span aria-hidden="true">00</span><h2>今晚还没点菜</h2><p>去菜单看看，想吃什么就点什么。</p>
+        <button type="button" @click="emit('open-menu')">去菜单点菜 →</button>
+      </section>
 
-    <section v-else class="selected-content" aria-label="小袁今晚已点菜品">
+      <section v-else key="content" class="selected-content" aria-label="小袁今晚已点菜品">
       <div class="selected-summary"><p>今晚一共</p><strong>{{ selections.length }}</strong><span>道菜</span></div>
-      <div class="selected-grid">
+      <TransitionGroup name="dish-list" tag="div" class="selected-grid">
         <article v-for="selection in selections" :key="selection.id" class="selected-card">
           <div class="selected-photo">
             <img :src="mediaUrl(selection.dish.image_url)" :alt="selection.dish.name" width="720" height="540" />
@@ -107,28 +108,31 @@ onBeforeUnmount(() => {
           </div>
           <div class="selected-card-body">
             <h2>{{ selection.dish.name }}</h2>
-            <div v-if="isEditingNote(selection.id)" class="note-editor">
-              <label :for="`selected-note-${selection.id}`">特殊要求</label>
-              <textarea
-              :ref="captureNoteEditor"
-              :id="`selected-note-${selection.id}`"
-              :value="noteValue(selection)"
-              maxlength="120"
-              rows="2"
-              placeholder="少辣、不要香菜…"
-              @input="noteDrafts[selection.id] = ($event.target as HTMLTextAreaElement).value"
-              @blur="save(selection)"
-              ></textarea>
-            </div>
-            <button v-else type="button" class="note-trigger" @click="editNote(selection)">
-              <template v-if="noteValue(selection)"><span>备注</span><strong>{{ noteValue(selection) }}</strong></template>
-              <template v-else><span aria-hidden="true">＋</span> 添加备注</template>
-            </button>
+            <Transition name="note-swap" mode="out-in">
+              <div v-if="isEditingNote(selection.id)" key="editor" class="note-editor">
+                <label :for="`selected-note-${selection.id}`">特殊要求</label>
+                <textarea
+                :ref="captureNoteEditor"
+                :id="`selected-note-${selection.id}`"
+                :value="noteValue(selection)"
+                maxlength="120"
+                rows="2"
+                placeholder="少辣、不要香菜…"
+                @input="noteDrafts[selection.id] = ($event.target as HTMLTextAreaElement).value"
+                @blur="save(selection)"
+                ></textarea>
+              </div>
+              <button v-else key="trigger" type="button" class="note-trigger" @click="editNote(selection)">
+                <template v-if="noteValue(selection)"><span>备注</span><strong>{{ noteValue(selection) }}</strong></template>
+                <template v-else><span aria-hidden="true">＋</span> 添加备注</template>
+              </button>
+            </Transition>
           </div>
         </article>
-      </div>
-    </section>
+      </TransitionGroup>
+      </section>
+    </Transition>
 
-    <button v-if="selections.length" class="open-menu-dock" type="button" @click="emit('open-menu')"><span>＋</span> 加菜</button>
+    <Transition name="dock"><button v-if="selections.length" class="open-menu-dock" type="button" @click="emit('open-menu')"><span>＋</span> 加菜</button></Transition>
   </main>
 </template>
