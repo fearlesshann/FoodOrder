@@ -11,3 +11,12 @@ describe('V29 category filter transition stability', () => {
     expect(styles).toMatch(/\.catalog-list-leave-active\s*\{[^}]*width:\s*100%;/s)
   })
 })
+
+describe('catalog scroll pagination motion', () => {
+  it('keeps appended rows on a short fade and does not anchor scroll to the sentinel', () => {
+    expect(styles).toMatch(/\.catalog-list-enter-from\s*\{[^}]*translateY\(6px\)/s)
+    expect(styles).toMatch(/\.catalog-list-enter-active\s*\{[^}]*220ms/s)
+    expect(styles).toMatch(/\.catalog-sentinel\s*\{[^}]*overflow-anchor:\s*none;/s)
+    expect(styles).toMatch(/\.catalog-list\s*\{[^}]*overflow-anchor:\s*none;/s)
+  })
+})

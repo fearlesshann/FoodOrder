@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cleanNote, filterCatalog, selectionForDish } from './menu'
+import { CATALOG_PAGE_SIZE, cleanNote, filterCatalog, nextVisibleCount, selectionForDish } from './menu'
 import type { CatalogDish, Selection } from './types'
 
 const selection = { id: 7, dish: { id: 3 } } as Selection
@@ -23,5 +23,15 @@ describe('menu utilities', () => {
     expect(filterCatalog(catalog, 1, '')).toEqual([catalog[0]])
     expect(filterCatalog(catalog, null, ' 蛋汤 ')).toEqual([catalog[1]])
     expect(filterCatalog(catalog, 1, '汤')).toEqual([])
+  })
+
+  it('advances the catalog window by one page and stops at the end', () => {
+    expect(CATALOG_PAGE_SIZE).toBeGreaterThan(1)
+    expect(CATALOG_PAGE_SIZE).toBeLessThan(105)
+    expect(nextVisibleCount(0, 105)).toBe(CATALOG_PAGE_SIZE)
+    expect(nextVisibleCount(CATALOG_PAGE_SIZE, 105)).toBe(CATALOG_PAGE_SIZE * 2)
+    expect(nextVisibleCount(96, 105)).toBe(105)
+    expect(nextVisibleCount(105, 105)).toBe(105)
+    expect(nextVisibleCount(12, 5, 12)).toBe(12)
   })
 })
