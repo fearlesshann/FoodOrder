@@ -1,5 +1,8 @@
 import type { CatalogDish, Selection } from './types'
 
+export const CATALOG_PAGE_SIZE = 12
+export const CATALOG_PRELOAD_PX = 720
+
 export function selectionForDish(selections: Selection[], dishId: number): Selection | undefined {
   return selections.find((selection) => selection.dish.id === dishId)
 }
@@ -14,4 +17,9 @@ export function filterCatalog(catalog: CatalogDish[], categoryId: number | null,
     (categoryId === null || dish.category.id === categoryId)
     && (!keyword || dish.name.toLocaleLowerCase('zh-CN').includes(keyword))
   ))
+}
+
+export function nextVisibleCount(current: number, total: number, pageSize = CATALOG_PAGE_SIZE): number {
+  if (current >= total) return current
+  return Math.min(total, current + pageSize)
 }
