@@ -31,8 +31,9 @@ export interface Menu {
 }
 
 export type LiveEvent =
-  | { type: 'connected' }
+  | { type: 'connected'; dinner_date: string }
   | { type: 'catalog.changed' }
   | { type: 'selection.created'; selection: Selection }
   | { type: 'selection.updated'; selection: Selection }
   | { type: 'selection.deleted'; selection_id: number }
+  | { type: 'selections.cleared'; selection_ids: number[]; dinner_date: string }

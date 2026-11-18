@@ -16,6 +16,7 @@ def make_client(tmp_path: Path) -> TestClient:
         database_url=f"sqlite:///{tmp_path / 'test.db'}",
         allowed_origins=("http://localhost:5173",),
         upload_dir=tmp_path / "uploads",
+        midnight_clear=False,
     )
     return TestClient(create_app(settings))
 
