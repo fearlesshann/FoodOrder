@@ -5,6 +5,7 @@ app/config.py
 app/database.py
 app/live.py
 app/main.py
+app/midnight.py
 app/models.py
 app/schemas.py
 family_dinner_api.egg-info/PKG-INFO
@@ -14,3 +15,4 @@ family_dinner_api.egg-info/requires.txt
 family_dinner_api.egg-info/top_level.txt
 tests/test_api.py
 tests/test_live.py
+tests/test_midnight.py

@@ -4,6 +4,8 @@ from collections import defaultdict
 
 from fastapi import WebSocket
 
+MENU_SPACE = "home-menu"
+
 
 class LiveMenuHub:
     def __init__(self) -> None:

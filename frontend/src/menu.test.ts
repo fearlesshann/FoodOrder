@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { CATALOG_PAGE_SIZE, cleanNote, filterCatalog, nextVisibleCount, selectionForDish } from './menu'
+import { CATALOG_PAGE_SIZE, cleanNote, filterCatalog, nextVisibleCount, reduceSelections, selectionForDish } from './menu'
 import type { CatalogDish, Selection } from './types'
 
 const selection = { id: 7, dish: { id: 3 } } as Selection
+
+function picked(id: number, dinnerDate = '2026-11-18'): Selection {
+  return { id, dinner_date: dinnerDate, dish: { id } } as Selection
+}
 
 describe('menu utilities', () => {
   it('finds the current selection for a catalog dish', () => {
@@ -23,6 +27,32 @@ describe('menu utilities', () => {
     expect(filterCatalog(catalog, 1, '')).toEqual([catalog[0]])
     expect(filterCatalog(catalog, null, ' 蛋汤 ')).toEqual([catalog[1]])
     expect(filterCatalog(catalog, 1, '汤')).toEqual([])
+  })
+
+  it('empties tonight when the Shanghai midnight clear arrives', () => {
+    const tonight = [picked(1, '2026-11-18'), picked(2, '2026-11-18')]
+    expect(reduceSelections(tonight, {
+      type: 'selections.cleared',
+      selection_ids: [1, 2],
+      dinner_date: '2026-11-19',
+    })).toEqual([])
+    const kept = picked(3, '2026-11-19')
+    expect(reduceSelections([...tonight, kept], {
+      type: 'selections.cleared',
+      selection_ids: [1, 2],
+      dinner_date: '2026-11-19',
+    })).toEqual([kept])
+  })
+
+  it('drops a stale open list after reconnecting on the new dinner date', () => {
+    const tonight = [picked(1, '2026-11-18')]
+    expect(reduceSelections(tonight, { type: 'connected', dinner_date: '2026-11-19' })).toEqual([])
+    expect(reduceSelections(tonight, { type: 'connected', dinner_date: '2026-11-18' })).toBe(tonight)
+  })
+
+  it('still removes one dish when a single selection is deleted', () => {
+    const tonight = [picked(1), picked(2)]
+    expect(reduceSelections(tonight, { type: 'selection.deleted', selection_id: 1 }).map((item) => item.id)).toEqual([2])
   })
 
   it('advances the catalog window by one page and stops at the end', () => {

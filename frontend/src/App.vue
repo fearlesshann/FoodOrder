@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { getCatalog, getCategories, getMenu, liveUrl, saveNote, selectDish, unselectDish } from './api'
+import { reduceSelections } from './menu'
 import AdminView from './components/AdminView.vue'
 import MenuView from './components/MenuView.vue'
 import SelectedView from './components/SelectedView.vue'
@@ -35,9 +36,7 @@ async function loadData() {
 }
 
 function upsertSelection(selection: Selection) {
-  const index = selections.value.findIndex((item) => item.id === selection.id)
-  if (index === -1) selections.value.push(selection)
-  else selections.value[index] = selection
+  selections.value = reduceSelections(selections.value, { type: 'selection.created', selection })
 }
 
 function connectLive() {
@@ -48,8 +47,7 @@ function connectLive() {
     const event = JSON.parse(message.data) as LiveEvent
     if (event.type === 'connected') connection.value = 'online'
     if (event.type === 'catalog.changed') void loadData()
-    if (event.type === 'selection.created' || event.type === 'selection.updated') upsertSelection(event.selection)
-    if (event.type === 'selection.deleted') selections.value = selections.value.filter((item) => item.id !== event.selection_id)
+    selections.value = reduceSelections(selections.value, event)
   }
   socket.onerror = () => socket?.close()
   socket.onclose = () => {

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import asyncio
+import contextlib
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -11,11 +14,31 @@ from .api import router
 from .config import Settings, load_settings
 from .database import Database
 from .live import LiveMenuHub
+from .midnight import midnight_clear_loop
+
+
+@contextlib.asynccontextmanager
+async def lifespan(app: FastAPI):
+    task: asyncio.Task[None] | None = None
+    if app.state.settings.midnight_clear:
+        ready = asyncio.Event()
+        task = asyncio.create_task(midnight_clear_loop(app.state.database, app.state.live, ready=ready))
+        app.state.midnight_task = task
+        await ready.wait()
+    else:
+        app.state.midnight_task = None
+    try:
+        yield
+    finally:
+        if task is not None:
+            task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await task
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     resolved = settings or load_settings()
-    app = FastAPI(title="今晚吃什么 API", version="0.1.0")
+    app = FastAPI(title="今晚吃什么 API", version="0.1.0", lifespan=lifespan)
     app.state.database = Database(resolved.database_url)
     app.state.settings = resolved
     app.state.live = LiveMenuHub()

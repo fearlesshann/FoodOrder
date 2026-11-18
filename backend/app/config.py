@@ -10,6 +10,7 @@ class Settings:
     database_url: str
     allowed_origins: tuple[str, ...]
     upload_dir: Path = Path("./uploads")
+    midnight_clear: bool = True
 
 
 def load_settings() -> Settings:

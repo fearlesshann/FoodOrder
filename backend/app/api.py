@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import uuid
-from datetime import date
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Path as ApiPath, Request, UploadFile, WebSocket, WebSocketDisconnect, status
@@ -12,12 +11,13 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from .live import MENU_SPACE
+from .midnight import today_shanghai
 from .models import CatalogDish, Category, Selection
 from .schemas import CatalogDishRead, CategoryRead, CategoryWrite, MenuRead, SelectionNoteUpdate, SelectionRead
 
 
 router = APIRouter(prefix="/api", tags=["dinner"])
-MENU_SPACE = "home-menu"
 MAX_IMAGE_BYTES = 20 * 1024 * 1024
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"}
 ALLOWED_IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"}
@@ -216,7 +216,7 @@ async def delete_catalog_dish(
 
 @router.get("/menu/today", response_model=MenuRead)
 def get_today_menu(session: Session = Depends(get_session)) -> MenuRead:
-    today = date.today()
+    today = today_shanghai()
     selections = session.scalars(
         select(Selection).where(Selection.dinner_date == today).order_by(Selection.created_at, Selection.id)
     ).unique().all()
@@ -231,14 +231,14 @@ async def select_dish(
 ) -> Selection:
     if session.get(CatalogDish, dish_id) is None:
         raise HTTPException(status_code=404, detail="没有找到这道菜")
-    selection = Selection(dish_id=dish_id, dinner_date=date.today(), note="")
+    selection = Selection(dish_id=dish_id, dinner_date=today_shanghai(), note="")
     session.add(selection)
     try:
         session.commit()
     except IntegrityError as exc:
         session.rollback()
         existing = session.scalar(
-            select(Selection).where(Selection.dish_id == dish_id, Selection.dinner_date == date.today())
+            select(Selection).where(Selection.dish_id == dish_id, Selection.dinner_date == today_shanghai())
         )
         if existing:
             return existing
@@ -256,7 +256,7 @@ async def update_selection_note(
     session: Session = Depends(get_session),
 ) -> Selection:
     selection = session.get(Selection, selection_id)
-    if selection is None or selection.dinner_date != date.today():
+    if selection is None or selection.dinner_date != today_shanghai():
         raise HTTPException(status_code=404, detail="没有找到这条点菜记录")
     selection.note = payload.note
     session.commit()
@@ -272,7 +272,7 @@ async def unselect_dish(
     session: Session = Depends(get_session),
 ) -> None:
     selection = session.get(Selection, selection_id)
-    if selection is None or selection.dinner_date != date.today():
+    if selection is None or selection.dinner_date != today_shanghai():
         raise HTTPException(status_code=404, detail="没有找到这条点菜记录")
     session.delete(selection)
     session.commit()
@@ -283,7 +283,7 @@ async def unselect_dish(
 async def live_menu(websocket: WebSocket) -> None:
     hub = websocket.app.state.live
     await hub.connect(MENU_SPACE, websocket)
-    await websocket.send_json({"type": "connected"})
+    await websocket.send_json({"type": "connected", "dinner_date": today_shanghai().isoformat()})
     try:
         while True:
             await websocket.receive_text()
